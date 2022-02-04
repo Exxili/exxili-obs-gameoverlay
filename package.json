@@ -1,0 +1,24 @@
+{
+  "name": "exxili-obs-gameoverlay",
+  "version": "1.0.0",
+  "description": "",
+  "main": "widget.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Exxili/exxili-obs-gameoverlay.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Exxili/exxili-obs-gameoverlay/issues"
+  },
+  "homepage": "https://github.com/Exxili/exxili-obs-gameoverlay#readme",
+  "devDependencies": {
+    "eslint": "^8.8.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.4"
+  }
+}
