@@ -1,13 +1,11 @@
-/* global Quasar */
-/* global Vue */
-
 const { useQuasar } = Quasar;
 const { ref } = Vue;
 
-/*
-Example kicking off the UI. Obviously, adapt this to your specific needs.
-Assumes you have a <div id="q-app"></div> in your <body> above
-*/
+/**
+ * Construction of Vue 3 App
+ * This is the apps main entry point which gets injected into
+ * <div id="q-app">...</div> in HTML
+ */
 const app = Vue.createApp({
   setup() {
     const $q = useQuasar();
