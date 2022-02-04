@@ -5,7 +5,8 @@
     },
     "globals": {
         "Quasar": true,
-        "Vue": true
+        "Vue": true,
+        "Toastify": true
     },
     "extends": [
         "airbnb-base"
