@@ -53,6 +53,9 @@ app.component('bar', {
         between white and light grey to indicate activity -->
     <q-icon name="mdi-wan" class="network" color="white" size="25px"></q-icon>
 
+    <!-- Recent Followers Symbol -->
+    <q-icon name="mdi-account-heart" class="followers" color="white" size="25px"></q-icon>
+
     <!-- Clock -->
     <clock></clock>
 
@@ -69,11 +72,11 @@ app.component('notifications', {
   setup() {
     window.addEventListener('onEventReceived', (obj) => {
       if (obj.detail.listener === 'follower-latest') {
-        GenerateToastify(`Thank you for following ${obj.detail.event.name}`, 5000, { background: 'blue' }, 'https://www.twitch.tv/p/legal/assets/images/extensions/6.svg');
+        GenerateToastify(`Thank you for following ${obj.detail.event.name}`, 5000, { background: 'blue', minHeight: '200px' }, 'https://www.twitch.tv/p/legal/assets/images/extensions/6.svg');
       }
 
       if (obj.detail.listener === 'subscriber-latest') {
-        GenerateToastify(`Thank you for subscribing ${obj.detail.event.name}`, 5000, { color: 'black', background: 'gold' });
+        GenerateToastify(`Thank you for subscribing ${obj.detail.event.name}`, 5000, { color: 'black', background: 'gold', minHeight: '200px' });
       }
     });
 

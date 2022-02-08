@@ -21,6 +21,13 @@
     color: white;
 }
 
+.followers {
+    position: absolute !important;
+    top: 7px !important;
+    right: 400px !important;
+    color: white;
+}
+
 .time {
     position: absolute;
     top: 10px;
@@ -34,4 +41,8 @@
     position: absolute !important;
     top: 7px !important;
     right: 15px !important;
+}
+
+.notifications {
+    margin-top: 100px !important;
 }
