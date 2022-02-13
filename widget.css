@@ -1,8 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Exo&display=swap');
 
 .app {
-    height: 1080px;
-    width: 1920px;
+    height: 2560px;
+    width: 1440px;
 }
 
 .bar {
@@ -41,8 +41,4 @@
     position: absolute !important;
     top: 7px !important;
     right: 15px !important;
-}
-
-.notifications {
-    margin-top: 100px !important;
 }

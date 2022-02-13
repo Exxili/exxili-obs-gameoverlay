@@ -71,13 +71,29 @@ app.component('bar', {
 app.component('notifications', {
   setup() {
     window.addEventListener('onEventReceived', (obj) => {
+
+      // Follower Event
       if (obj.detail.listener === 'follower-latest') {
-        GenerateToastify(`Thank you for following ${obj.detail.event.name}`, 5000, { background: 'blue', minHeight: '200px' }, 'https://www.twitch.tv/p/legal/assets/images/extensions/6.svg');
+        GenerateToastify(`Thank you for following ${obj.detail.event.name}`, 5000, { background: 'blue' }, 'https://www.twitch.tv/p/legal/assets/images/extensions/6.svg');
       }
 
+      // Subscriber Event
       if (obj.detail.listener === 'subscriber-latest') {
-        GenerateToastify(`Thank you for subscribing ${obj.detail.event.name}`, 5000, { color: 'black', background: 'gold', minHeight: '200px' });
+        GenerateToastify(`Thank you for subscribing ${obj.detail.event.name}`, 5000, { color: 'black', background: 'white' });
       }
+
+      if (obj.detail.listener === 'host-latest') {
+        GenerateToastify(`Thank you for hosting ${obj.detail.event.name}`, 5000, { color: 'white', background: 'red' });
+      }
+
+      if (obj.detail.listener === 'tip-latest') {
+        GenerateToastify(`Thank you for tipping ${obj.detail.event.name}`, 5000, { color: 'black', background: 'lime' });
+      }
+
+      if (obj.detail.listener === 'raid-latest') {
+        GenerateToastify(`Thank you for raiding ${obj.detail.event.name}`, 5000, { color: 'white', background: 'DeepPink' });
+      }
+
     });
 
     return {
@@ -110,6 +126,13 @@ app.component('clock', {
     </div>
   `,
 });
+
+
+
+
+
+
+
 
 app.use(Quasar, { config: {} });
 app.mount('#q-app');
