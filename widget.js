@@ -1,53 +1,110 @@
-const { useQuasar } = Quasar;
-const { ref } = Vue;
 
-/**
- * This options get injected via Streamelements
- */
+// Data
 let userOptions = {
   channelName: "",
-}
+};
+// Commands
+
+// Counter
+const CounterIncrement = "!c+"
+const CounterDecrement = "!c-"
+const CounterClear = "!cc"
 
 /**
  * Counter Store for Stream Death Counter
  */
-const useCounterStore = Pinia.defineStore('counter', {
+ const useCounterStore = Pinia.defineStore('counter', {
   state() {
     return {
-      value: 0
+      isActive: false,
+      value: 0,
     }
   },
   actions: {
     increment(state) {
       this.value++
+      this.isActive = true;
     },
     decrement(state) {
       this.value--
+      this.isActive = true;
     },
     clear(state) {
-      this.valie = 0;
+      this.value = 0;
+      this.isActive = false;
     }
   }
 })
 
 /**
- * Generate a Toastify.js Notification
- * @param {*} text The Text to be displayed in the toast
- * @param {*} duration the duration the toast will be displayed on screen
- * @param {*} style the css style for the toast notification
+ * Sanitize any Text coming from HTML Events
  */
-function GenerateToastify(text, duration, style, avatar) {
-  Toastify({
-    text,
-    duration,
-    style,
-    avatar,
-    offset: {
-      x: 0, // horizontal axis - can be a number or a string indicating unity. eg: '2em'
-      y: 35, // vertical axis - can be a number or a string indicating unity. eg: '2em'
-    },
-  }).showToast();
+function html_encode(e) {
+  return e.replace(/[\<\>\"\^]/g, function (e) {
+      return "&#" + e.charCodeAt(0) + ";";
+  });
 }
+
+/**
+ * ChatCommandHandler
+ */
+function ChatCommandHandler(user, userState, message) {
+  const counterStore = useCounterStore();
+
+  console.log("Message", message);
+  console.log("User State: IsMod", userState.mod, userState.badges.broadcaster);
+
+  console.log("isIncrement", message === CounterIncrement)
+  console.log("isDecrement", message === CounterDecrement)
+  console.log("isClear", message === CounterClear)
+
+  
+  // Counter Commandss
+  if (message === CounterIncrement && (userState.mod || userState.badges.broadcaster)) {
+    console.log("incrementing")
+    counterStore.increment();
+  }
+
+  if (message === CounterDecrement && (userState.mod || userState.badges.broadcaster)) {
+    console.log("decrementing")
+    counterStore.decrement();
+  }
+
+  if (message === CounterClear && (userState.mod || userState.badges.broadcaster)) {
+    console.log("clearing")
+    counterStore.clear();
+  }
+}
+
+/**
+ * EventsHandler
+ * Triggers when Streamelements fires off 'onEventReceived'
+ * @param {*} obj Stream Elements Object when events fire
+ */
+function EventsHandler(obj) {
+    console.log("EventName", obj);
+
+    // Handle Chat Messages
+    if (obj.detail.listener === "message") {
+
+      // Sanitize the Input
+      const data = obj.detail.event.data;
+
+      // Get Data Elements
+      const message = html_encode(data.text);
+      const user = data.nick;
+      const userState = {
+        mod: parseInt(data.tags.mod),
+        badges: {
+          broadcaster: (user === userOptions.channelName)
+        }
+      }
+
+      ChatCommandHandler(user, userState, message)
+    }
+}
+
+
 
 /**
  * Construction of Vue 3 App
@@ -57,121 +114,34 @@ function GenerateToastify(text, duration, style, avatar) {
 const app = Vue.createApp({
   setup() {
     const CounterStore = useCounterStore();
-    
-    // Setup event listener for Widget Load
-    // window.addEventListener('onWidgetLoad' (obj) => {
 
-    // })
-
-    return {
-      CounterStore
-    };
-  },
-});
-
-app.use(Pinia.PiniaVuePlugin)
-
-/**
- * Operating System Bar
- */
-app.component('bar', {
-  setup() {
-    return {
-
-    };
-  },
-  template: `
-    <!-- Bar Background -->
-    <div class="bar">
-    </div>
-
-    <!-- Network Symbol -->
-    <!-- Idea - Have network symbol flash / change color
-        between white and light grey to indicate activity -->
-    <q-icon name="mdi-wan" class="network" color="white" size="25px"></q-icon>
-
-    <!-- Recent Followers Symbol -->
-    <q-icon name="mdi-account-heart" class="followers" color="white" size="25px"></q-icon>
-
-    <!-- Clock -->
-    <clock></clock>
-
-    <!-- Notification Icon -->
-    <q-icon name="mdi-message-outline" class="notification" color="white" size="25px"></q-icon>
-
-    <div><h1>{{value}}</h1></div>
-  `,
-});
-
-/**
- * Toast notifications for Events Listener
- * https://github.com/apvarun/toastify-js
- */
-app.component('notifications', {
-  setup() {
-    window.addEventListener('onEventReceived', (obj) => {
-
-      // Follower Event
-      if (obj.detail.listener === 'follower-latest') {
-        GenerateToastify(`Thank you for following ${obj.detail.event.name}`, 5000, { background: 'blue' }, 'https://www.twitch.tv/p/legal/assets/images/extensions/6.svg');
-      }
-
-      // Subscriber Event
-      if (obj.detail.listener === 'subscriber-latest') {
-        GenerateToastify(`Thank you for subscribing ${obj.detail.event.name}`, 5000, { color: 'black', background: 'white' });
-      }
-
-      if (obj.detail.listener === 'host-latest') {
-        GenerateToastify(`Thank you for hosting ${obj.detail.event.name}`, 5000, { color: 'white', background: 'red' });
-      }
-
-      if (obj.detail.listener === 'tip-latest') {
-        GenerateToastify(`Thank you for tipping ${obj.detail.event.name}`, 5000, { color: 'black', background: 'lime' });
-      }
-
-      if (obj.detail.listener === 'raid-latest') {
-        GenerateToastify(`Thank you for raiding ${obj.detail.event.name}`, 5000, { color: 'white', background: 'DeepPink' });
-      }
-
+    // Setup an event listener for Streamelements widget onload
+    window.addEventListener('onWidgetLoad', function (obj) {
+      userOptions.channelName = obj.detail.channel.username;
+    });
+      
+    // Setup an event listener for Streamelements events
+    window.addEventListener('onEventReceived', function (obj) {
+      EventsHandler(obj);
     });
 
+    function onFirstPageClick() {
+      CounterStore.increment();
+    }
+  
     return {
-      //
+      CounterStore,
+      onFirstPageClick
     };
   },
 });
 
-/**
- * Overlay Bar's Clock Component
- * Displaying Local time to the User viewing the Overlay
- * Format: 00:00:00 - HH-MM-SS
- */
-app.component('clock', {
-  setup() {
-    const osTime = ref('');
+// Setup Pinia for use
+const pinia = Pinia.createPinia();
+app.use(pinia)
 
-    setInterval(() => {
-      const dateTime = new Date();
-      osTime.value = dateTime.toLocaleTimeString();
-    }, 1000);
-
-    return {
-      osTime,
-    };
-  },
-  template: `
-    <div class="time">
-      {{osTime}}
-    </div>
-  `,
-});
-
-
-
-
-
-
-
-
+// Setup Quasar for use
 app.use(Quasar, { config: {} });
+
+// Finally Mount the Application
 app.mount('#q-app');
