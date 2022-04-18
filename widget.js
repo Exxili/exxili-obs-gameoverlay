@@ -2,6 +2,35 @@ const { useQuasar } = Quasar;
 const { ref } = Vue;
 
 /**
+ * This options get injected via Streamelements
+ */
+let userOptions = {
+  channelName: "",
+}
+
+/**
+ * Counter Store for Stream Death Counter
+ */
+const useCounterStore = Pinia.defineStore('counter', {
+  state() {
+    return {
+      value: 0
+    }
+  },
+  actions: {
+    increment(state) {
+      this.value++
+    },
+    decrement(state) {
+      this.value--
+    },
+    clear(state) {
+      this.valie = 0;
+    }
+  }
+})
+
+/**
  * Generate a Toastify.js Notification
  * @param {*} text The Text to be displayed in the toast
  * @param {*} duration the duration the toast will be displayed on screen
@@ -27,12 +56,20 @@ function GenerateToastify(text, duration, style, avatar) {
  */
 const app = Vue.createApp({
   setup() {
-    // const $q = useQuasar();
+    const CounterStore = useCounterStore();
+    
+    // Setup event listener for Widget Load
+    // window.addEventListener('onWidgetLoad' (obj) => {
+
+    // })
 
     return {
+      CounterStore
     };
   },
 });
+
+app.use(Pinia.PiniaVuePlugin)
 
 /**
  * Operating System Bar
@@ -61,6 +98,8 @@ app.component('bar', {
 
     <!-- Notification Icon -->
     <q-icon name="mdi-message-outline" class="notification" color="white" size="25px"></q-icon>
+
+    <div><h1>{{value}}</h1></div>
   `,
 });
 
