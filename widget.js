@@ -1,4 +1,7 @@
 
+// const { useQuasar } = Quasar;
+const { ref } = Vue;
+
 // Data
 let userOptions = {
   channelName: "",
@@ -51,27 +54,16 @@ function html_encode(e) {
 function ChatCommandHandler(user, userState, message) {
   const counterStore = useCounterStore();
 
-  console.log("Message", message);
-  console.log("User State: IsMod", userState.mod, userState.badges.broadcaster);
-
-  console.log("isIncrement", message === CounterIncrement)
-  console.log("isDecrement", message === CounterDecrement)
-  console.log("isClear", message === CounterClear)
-
-  
   // Counter Commandss
   if (message === CounterIncrement && (userState.mod || userState.badges.broadcaster)) {
-    console.log("incrementing")
     counterStore.increment();
   }
 
   if (message === CounterDecrement && (userState.mod || userState.badges.broadcaster)) {
-    console.log("decrementing")
     counterStore.decrement();
   }
 
   if (message === CounterClear && (userState.mod || userState.badges.broadcaster)) {
-    console.log("clearing")
     counterStore.clear();
   }
 }
@@ -104,8 +96,6 @@ function EventsHandler(obj) {
     }
 }
 
-
-
 /**
  * Construction of Vue 3 App
  * This is the apps main entry point which gets injected into
@@ -134,6 +124,75 @@ const app = Vue.createApp({
       onFirstPageClick
     };
   },
+});
+
+/**
+ * Page Component
+ * This is the main page of the overlay, containing all other components
+ */
+app.component('page', {
+  setup() {
+    return {
+      //
+    }
+  },
+  template: `
+    <q-page class="column items-center justify-center">
+      <bar/>
+    </q-page>
+  `
+})
+
+app.component('bar', {
+  setup() {
+    return {
+      //
+    }
+  },
+  template: `
+    <div class="bar">
+
+      <!-- Logo -->
+      <q-img 
+        class="logo"
+        src="https://cdn.streamelements.com/uploads/b8d62590-4dcc-423c-95a7-4a7c2dea5e7f.PNG"
+        height="38px"
+        width="38px"
+      />
+
+      <!-- Clock -->
+      <clock />
+
+      <!-- Noticication Icon -->
+      <q-icon class="notification" name="mdi-message-badge"/>
+    </div>
+
+  `
+})
+
+/**
+ * Overlay Bar's Clock Component
+ * Displaying Local time to the User viewing the Overlay
+ * Format: 00:00:00 - HH-MM-SS
+ */
+ app.component('clock', {
+  setup() {
+    const osTime = ref('');
+
+    setInterval(() => {
+      const dateTime = new Date();
+      osTime.value = dateTime.toLocaleTimeString();
+    }, 1000);
+
+    return {
+      osTime,
+    };
+  },
+  template: `
+    <div class="time">
+      {{osTime}}
+    </div>
+  `,
 });
 
 // Setup Pinia for use

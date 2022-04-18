@@ -14,6 +14,10 @@
     width: 100%;
 }
 
+.logo {
+    margin: 2px;
+}
+
 .network {
     position: absolute !important;
     top: 7px !important;
@@ -41,4 +45,7 @@
     position: absolute !important;
     top: 7px !important;
     right: 15px !important;
+    height: 38px;
+    width: 38px;
+    color: white;
 }
