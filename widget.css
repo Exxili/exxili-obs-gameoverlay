@@ -47,3 +47,7 @@
     right: 15px !important;
     color: white;
 }
+
+.q-notifications__list--bottom {
+    bottom: 50px !important;
+ }
