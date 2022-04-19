@@ -164,7 +164,11 @@ app.component('bar', {
       <clock />
 
       <!-- Noticication Icon -->
-      <q-icon class="notification" name="mdi-message-badge"/>
+      <q-icon 
+        class="notification" 
+        name="mdi-message-badge"
+        size="25px"
+      />
     </div>
 
   `
