@@ -1,4 +1,5 @@
 // const { useQuasar } = Quasar;
+
 const { ref } = Vue;
 
 // Data
@@ -23,15 +24,15 @@ const useCounterStore = Pinia.defineStore('counter', {
     };
   },
   actions: {
-    increment(state) {
-      this.value++;
+    increment() {
+      this.value += 1;
       this.isActive = true;
     },
-    decrement(state) {
-      this.value--;
+    decrement() {
+      this.value -= 1;
       this.isActive = true;
     },
-    clear(state) {
+    clear() {
       this.value = 0;
       this.isActive = false;
     },
@@ -144,6 +145,7 @@ function GenerateToastify(text, duration, style, avatar) {
     duration,
     style,
     avatar,
+    gravity: 'bottom',
     offset: {
       x: 0, // horizontal axis - can be a number or a string indicating unity. eg: '2em'
       y: 35, // vertical axis - can be a number or a string indicating unity. eg: '2em'
