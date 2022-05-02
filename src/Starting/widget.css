@@ -7,7 +7,7 @@
 
 .bar {
     position: absolute;
-    top: 0px;
+    bottom: 0px;
     left: 0px;
     background: #444444;
     height: 40px;
@@ -16,29 +16,6 @@
 
 .logo {
     margin: 2px;
-}
-
-.logoRotateHorizontal{
-    -moz-animation: spinHorizontal 10s infinite linear;
-    -o-animation: spinHorizontal 10s infinite linear;    
-    -webkit-animation: spinHorizontal 10s infinite linear;
-    animation: spinHorizontal 10s infinite linear;
-}
-
-@keyframes spinHorizontal {
-    0% { transform: rotateY(0deg); }
-    100% { transform: rotateY(360deg); }
-}
-
-.currentGame {
-    position: absolute !important;
-    top: 4px;
-    left: 45px;
-    width: 450px;
-    height: 31px;
-    background: #666666;
-    border-radius: 10px;
-    box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
 }
 
 .network {

@@ -11,7 +11,8 @@ const userOptions = {
 // Counter
 const CounterIncrement = '!c+';
 const CounterDecrement = '!c-';
-const CounterClear = '!cc';
+const CounterClear = '!cc'; 
+
 
 /**
  * Counter Store for Stream Death Counter

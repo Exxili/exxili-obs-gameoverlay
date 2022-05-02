@@ -5,7 +5,6 @@ const { ref } = Vue;
 // Data
 const userOptions = {
   channelName: '',
-  apiToken: '',
 };
 // Commands
 
@@ -146,6 +145,7 @@ function GenerateToastify(text, duration, style, avatar) {
     duration,
     style,
     avatar,
+    gravity: 'bottom',
     offset: {
       x: 0, // horizontal axis - can be a number or a string indicating unity. eg: '2em'
       y: 35, // vertical axis - can be a number or a string indicating unity. eg: '2em'
@@ -191,8 +191,6 @@ const app = Vue.createApp({
 
     // Setup an event listener for Streamelements widget onload
     window.addEventListener('onWidgetLoad', (obj) => {
-      console.log('obj', obj);
-      userOptions.apiToken = obj.detail.channel.apiToken;
       userOptions.channelName = obj.detail.channel.username;
     });
 
@@ -232,14 +230,8 @@ app.component('page', {
 
 app.component('bar', {
   setup() {
-    const url = 'https://decapi.me/twitch/game/exxili';
-    const xmlHttp = new XMLHttpRequest();
-    xmlHttp.open('GET', url, false);
-    xmlHttp.send(null);
-    const game = xmlHttp.responseText;
-
     return {
-      game
+      //
     };
   },
   template: `
@@ -247,18 +239,11 @@ app.component('bar', {
 
       <!-- Logo -->
       <q-img 
-        class="logo logoRotateHorizontal"
+        class="logo"
         src="https://cdn.streamelements.com/uploads/b8d62590-4dcc-423c-95a7-4a7c2dea5e7f.PNG"
         height="38px"
         width="38px"
       />
-
-      <!-- Game being Played -->
-      <div
-        class="currentGame"
-      >
-        {{game}}
-      </div>
 
       <!-- Clock -->
       <clock />
