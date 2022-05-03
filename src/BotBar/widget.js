@@ -1,18 +1,21 @@
+/* eslint-disable no-restricted-syntax */
 // const { useQuasar } = Quasar;
 
-const { ref } = Vue;
+const { ref, h } = Vue;
 
 // Data
 const userOptions = {
   channelName: '',
+  apiToken: '',
+  recentFollowers: [],
+  recentSubscribers: [],
 };
 // Commands
 
 // Counter
 const CounterIncrement = '!c+';
 const CounterDecrement = '!c-';
-const CounterClear = '!cc'; 
-
+const CounterClear = '!cc';
 
 /**
  * Counter Store for Stream Death Counter
@@ -188,16 +191,21 @@ function EventsHandler(obj) {
  */
 const app = Vue.createApp({
   setup() {
+    // Identify Global Vars
     const CounterStore = useCounterStore();
 
     // Setup an event listener for Streamelements widget onload
     window.addEventListener('onWidgetLoad', (obj) => {
+      console.log('obj', obj);
+      userOptions.apiToken = obj.detail.channel.apiToken;
       userOptions.channelName = obj.detail.channel.username;
+      userOptions.recentFollowers = obj.detail.session.data['follower-recent'];
     });
 
     // Setup an event listener for Streamelements events
     window.addEventListener('onEventReceived', (obj) => {
       EventsHandler(obj);
+      userOptions.recentFollowers = obj.detail.session.data['follower-recent'];
     });
 
     function onFirstPageClick() {
@@ -231,27 +239,169 @@ app.component('page', {
 
 app.component('bar', {
   setup() {
+    // Import the Death Counter Store
+    const counterStore = useCounterStore();
+
+    const game = ref('');
+
+    const followers = ref('');
+    const subscribers = ref('');
+
+    window.addEventListener('onWidgetLoad', (obj) => {
+      // Set Recent Followers
+      userOptions.recentFollowers = obj.detail.session.data['follower-recent'];
+      followers.value = userOptions.recentFollowers.map((follower) => `${follower.name}`).join(' ');
+
+      // Set Recent Subscribers
+      userOptions.recentSubscribers = obj.detail.session.data['subscriber-recent'];
+      subscribers.value = userOptions.recentSubscribers.map((subscriber) => `${subscriber.name}`).join(' ');
+
+      console.log('val', followers.value);
+      console.log('subs', subscribers.value);
+    });
+
+    function GetCurrentGame() {
+      console.log('getting current game');
+      const url = 'https://decapi.me/twitch/game/exxili';
+      const xmlHttp = new XMLHttpRequest();
+      xmlHttp.open('GET', url, false);
+      xmlHttp.send(null);
+      return xmlHttp.responseText;
+    }
+
+    // Every minute check the current game to see if its been changed
+    setInterval(() => {
+      game.value = GetCurrentGame();
+    }, 60000);
+
+    // Perform first check for Current Game
+    game.value = GetCurrentGame();
+
+    console.log('followers', followers);
+    console.log('useropts', userOptions);
+
     return {
-      //
+      game,
+      followers,
+      subscribers,
+      counterStore,
     };
   },
   template: `
-    <div class="bar">
+    <div class="bar row justify-start">
 
       <!-- Logo -->
       <q-img 
-        class="logo"
+        class="col logoRotateHorizontal"
         src="https://cdn.streamelements.com/uploads/b8d62590-4dcc-423c-95a7-4a7c2dea5e7f.PNG"
-        height="38px"
-        width="38px"
+        style="height: 40px; max-width: 40px"
       />
 
-      <!-- Clock -->
-      <clock />
+      <!-- Game being Played -->
+      <div
+        class="col-auto"
+        style="background: #666666; margin: 5px; border-radius: 10px;"
+      >
+        <div class="row justify-center items-center">
+          <q-icon 
+          class="col-1 currentGameIcon" 
+          name="mdi-google-controller"
+          size="25px"
+          style="margin-top: 4px; margin-right: 15px; margin-left: 20px;"
+          />
+          <div class="col currentGameText"
+          style="margin-top: 5px;"
+          >
+          {{game}}
+          </div>
+        </div>
+      </div>
 
-      <!-- Noticication Icon -->
+      <!-- Death Counter -->
+      <div
+        v-if="counterStore.isActive"
+        class="col-auto"
+        style="background: #666666; margin: 5px; border-radius: 10px;"
+      >
+        <div class="row justify-center items-center">
+          <q-icon 
+          class="col-1 currentGameIcon" 
+          name="mdi-skull-crossbones"
+          size="25px"
+          style="margin-top: 4px; margin-right: 15px; margin-left: 20px;"
+          />
+          <div class="col currentGameText"
+          style="margin-top: 5px;"
+          >
+            {{counterStore.value}}
+          </div>
+        </div>
+      </div>
+
+      <!-- Most Recent Followers -->
+      <div
+        class="col-auto"
+        style="background: #666666; margin: 5px; border-radius: 10px; width: 300px;"
+      >
+        <div class="row justify-center items-center">
+          <q-icon 
+          class="col-1 currentGameIcon" 
+          name="mdi-account"
+          size="25px"
+          style="margin-right: 15px; margin-left: 10px;"
+          />
+          <div class="col currentGameText"
+          style="margin-top: 5px;"
+          >
+            <marquee scrollamount="3">{{followers}}</marquee>
+          </div>
+        </div>
+      </div>
+
+      <!-- Most Recent Subscribers -->
+      <div
+        class="col-auto"
+        style="background: #666666; margin: 5px; border-radius: 10px; width: 300px;"
+      >
+        <div class="row justify-center items-center">
+          <q-icon 
+          class="col-1 currentGameIcon" 
+          name="mdi-diamond-stone"
+          size="25px"
+          style="margin-right: 15px; margin-left: 10px;"
+          />
+          <div class="col currentGameText"
+          style="margin-top: 5px;"
+          >
+            <marquee scrollamount="3">{{subscribers}}</marquee>
+          </div>
+        </div>
+      </div>
+
+      <q-space />
+
+      <!-- Clock -->
+      <clock 
+      class="col"
+      style="
+      position: absolute;
+      top: 10px;
+      right: 55px;
+      color: white;
+      font-size: 14px;
+      font-family: 'Exo', sans-serif;
+      "
+       />
+
+      <!-- Notification Icon -->
       <q-icon 
-        class="notification" 
+        class="col" 
+        style="
+        position: absolute;
+        top: 7px;
+        right: 15px;
+        color: white;
+        "
         name="mdi-message-badge"
         size="25px"
       />
@@ -292,6 +442,8 @@ app.component('clock', {
 app.component('notifications', {
   setup() {
     window.addEventListener('onEventReceived', (obj) => {
+      console.log('event', obj.detail.listener, obj.detail.event.gifted);
+
       // Follower Event
       if (obj.detail.listener === 'follower-latest') {
         const audio = new Audio('https://cdn.streamelements.com/uploads/0fbf6518-4cf1-4ab9-a15f-1c1ac8200d1e.mp3');
@@ -300,17 +452,19 @@ app.component('notifications', {
       }
 
       // NewSubscriber Event - non gifted
-      if (obj.detail.listener === 'subscriber-latest' && obj.detail.event.gifted === false) {
+      if (obj.detail.listener === 'subscriber-latest' && (obj.detail.event.gifted === false || obj.detail.event.gifted === undefined)) {
         const audio = new Audio('https://cdn.streamelements.com/uploads/36b7c307-d3e9-4b98-9988-861f501bfde4.mp3');
         audio.play();
         GenerateToastify(GenNewSubscriberText(obj.detail.event.name, obj.detail.event.amount, html_encode(obj.detail.event.message)), 5000, { color: 'black', background: 'orange' });
       }
 
       if (obj.detail.listener === 'host-latest') {
-        GenerateToastify('Thanks for the host', 5000, { color: 'white', background: 'green' });
+        GenerateToastify(`Thanks for the host ${obj.detail.event.name}`, 5000, { color: 'white', background: 'green' });
       }
 
       if (obj.detail.listener === 'tip-latest') {
+        const audio = new Audio('https://cdn.streamelements.com/uploads/83513304-9a7f-4cdb-896b-1bf91578717f.mp3');
+        audio.play();
         GenerateToastify(GenTipText(obj.detail.event.name, obj.detail.event.amount, html_encode(obj.detail.event.message)), 5000, { color: 'white', background: 'purple' });
       }
 
@@ -332,6 +486,8 @@ app.component('notifications', {
 // Setup Pinia for use
 const pinia = Pinia.createPinia();
 app.use(pinia);
+
+// Add vue marquee text component
 
 // Setup Quasar for use
 app.use(Quasar, { config: {} });

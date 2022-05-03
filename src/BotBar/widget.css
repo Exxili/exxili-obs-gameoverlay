@@ -15,7 +15,39 @@
 }
 
 .logo {
+    position: relative;
+    top: 2px;
+    left: 2px;
     margin: 2px;
+    height: 38px !important;
+    width: 38px !important;
+}
+
+.logoRotateHorizontal{
+    -moz-animation: spinHorizontal 10s infinite linear;
+    -o-animation: spinHorizontal 10s infinite linear;    
+    -webkit-animation: spinHorizontal 10s infinite linear;
+    animation: spinHorizontal 10s infinite linear;
+}
+
+@keyframes spinHorizontal {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(360deg); }
+}
+
+.currentGame {
+    background: #666666;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+}
+
+.currentGameText {
+    font-family: 'Exo', sans-serif;
+    color: white;
+}
+
+.currentGameIcon {
+    color: white;
 }
 
 .network {
@@ -33,21 +65,108 @@
 }
 
 .time {
-    position: absolute;
+    /* position: absolute;
     top: 10px;
-    right: 55px;
+    right: 55px; */
     color: white;
     font-size: 14px;
     font-family: 'Exo', sans-serif;
 }
 
-.notification {
-    position: absolute !important;
-    top: 7px !important;
-    right: 15px !important;
-    color: white;
-}
-
 .q-notifications__list--bottom {
     bottom: 50px !important;
  }
+
+/* .wrap {
+    overflow: hidden;
+}
+.content {
+    width: 100000px;
+}
+.text {
+    animation-name: animation;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    float: left;
+}
+.paused .text {
+animation-play-state: paused
+}
+@keyframes animation {
+    0% { transform:translateX(0); }
+    100% { transform:translateX(-100%); }
+} */
+
+.marquee {
+    overflow: hidden;
+    display: flex;
+    width: 100%;
+  }
+  
+.marquee.marquee-left .marquee-inner {
+    -webkit-animation: marquee-left 5s linear infinite;
+    animation: marquee-left 5s linear infinite;
+}
+
+.marquee.marquee-right .marquee-inner {
+    -webkit-animation: marquee-right 5s linear infinite;
+    animation: marquee-right 5s linear infinite;
+}
+
+.marquee-inner {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+
+    width: -webkit-fit-content;
+
+    width: -moz-fit-content;
+
+    width: fit-content;
+    will-change: transform;
+}
+
+.marquee-content {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+@-webkit-keyframes marquee-left {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    100% {
+        transform: translate3d(-100%, 0, 0);
+    }
+}
+
+@keyframes marquee-left {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    100% {
+        transform: translate3d(-100%, 0, 0);
+    }
+}
+
+@-webkit-keyframes marquee-right {
+    0% {
+        transform: translate3d(-100%, 0, 0);
+    }
+
+    100% {
+        transform: translate3d(0%, 0, 0);
+    }
+}
+
+@keyframes marquee-right {
+    0% {
+        transform: translate3d(-100%, 0, 0);
+    }
+
+    100% {
+        transform: translate3d(0%, 0, 0);
+    }
+}

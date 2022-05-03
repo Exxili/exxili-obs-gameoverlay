@@ -1,11 +1,28 @@
-// const { useQuasar } = Quasar;
-
-const { ref } = Vue;
+/* eslint-disable no-restricted-syntax */
+const { useQuasar, useDialogPluginComponent } = Quasar;
+const { ref, defineProps, defineEmits } = Vue;
 
 // Data
 const userOptions = {
   channelName: '',
+  apiToken: '',
+  recentFollowers: [],
+  recentSubscribers: [],
 };
+
+// Clips
+const clips = [
+  {
+    title: 'Accept the Fact!',
+    user: 'Fraxxxi',
+    src: 'https://cdn.streamelements.com/uploads/d034c4ed-7c5a-4851-aa30-b80c192bc6e6.mp4',
+  },
+  {
+    title: 'AndyExe has broke',
+    user: 'steamclockalice',
+    src: 'https://cdn.streamelements.com/uploads/254b7c4f-5a09-451f-b323-8953f4debbec.mp4',
+  },
+];
 // Commands
 
 // Counter
@@ -38,6 +55,31 @@ const useCounterStore = Pinia.defineStore('counter', {
     },
   },
 });
+
+const useVideoStore = Pinia.defineStore('video', {
+  state() {
+    return {
+      finishedPlaying: true,
+    };
+  },
+});
+
+/**
+ * Random Function to pick clips from array with no repeats
+ * @param {*} array
+ * @returns Random
+ */
+function randomNoRepeats(array) {
+  let copy = array.slice(0);
+  // eslint-disable-next-line func-names
+  return function() {
+    if (copy.length < 1) { copy = array.slice(0); }
+    const index = Math.floor(Math.random() * copy.length);
+    const item = copy[index];
+    copy.splice(index, 1);
+    return item;
+  };
+}
 
 // Functions to generate Follower Text
 function GenFollowText(name) {
@@ -106,6 +148,29 @@ function GenCheerText(name, amount, message) {
   return initialText;
 }
 
+function PlayVideo($q, title, user, src) {
+  console.log('PlayVideoProps', $q, title, user, src);
+
+  $q.dialog({
+    component: 'clips',
+
+    // // props forwarded to your custom component
+    componentProps: {
+      title,
+      user,
+      src,
+    },
+    // ...more..props...
+    // }
+  }).onOk(() => {
+    console.log('OK');
+  }).onCancel(() => {
+    console.log('Cancel');
+  }).onDismiss(() => {
+    console.log('Called on OK or Cancel');
+  });
+}
+
 /**
  * Sanitize any Text coming from HTML Events
  */
@@ -145,7 +210,6 @@ function GenerateToastify(text, duration, style, avatar) {
     duration,
     style,
     avatar,
-    gravity: 'bottom',
     offset: {
       x: 0, // horizontal axis - can be a number or a string indicating unity. eg: '2em'
       y: 35, // vertical axis - can be a number or a string indicating unity. eg: '2em'
@@ -187,22 +251,43 @@ function EventsHandler(obj) {
  */
 const app = Vue.createApp({
   setup() {
+    const videoStore = useVideoStore();
+    // eslint-disable-next-line guard-for-in
+    // for (const field in window) {
+    //   console.log(`${field} has been added`);
+    // }
+    const $q = useQuasar();
+
+    // Identify Global Vars
     const CounterStore = useCounterStore();
 
     // Setup an event listener for Streamelements widget onload
     window.addEventListener('onWidgetLoad', (obj) => {
+      console.log('obj', obj);
+      userOptions.apiToken = obj.detail.channel.apiToken;
       userOptions.channelName = obj.detail.channel.username;
+      userOptions.recentFollowers = obj.detail.session.data['follower-recent'];
     });
 
     // Setup an event listener for Streamelements events
     window.addEventListener('onEventReceived', (obj) => {
       EventsHandler(obj);
+      userOptions.recentFollowers = obj.detail.session.data['follower-recent'];
     });
 
     function onFirstPageClick() {
       CounterStore.increment();
     }
 
+    const chooser = randomNoRepeats(clips);
+    setInterval(() => {
+      if (videoStore.finishedPlaying === true) {
+        videoStore.finishedPlaying = false;
+
+        const vidToPlay = chooser();
+        PlayVideo($q, vidToPlay.title, vidToPlay.user, vidToPlay.src);
+      }
+    }, 30000);
     return {
       CounterStore,
       onFirstPageClick,
@@ -223,6 +308,22 @@ app.component('page', {
   template: `
     <q-page class="column items-center justify-center">
       <bar/>
+
+      <!-- Exxili Title -->
+      <div
+        style="
+        position: absolute;
+        transform: translate(-50%, -50%);
+        top: 50%;
+        left: 50%;
+        color: white;
+        font-size: 148px;
+        font-family: 'Zilap Orion Personal Use', sans-serif;
+        "
+      >
+        Exxili
+      </div>
+
       <notifications />
     </q-page>
   `,
@@ -230,27 +331,169 @@ app.component('page', {
 
 app.component('bar', {
   setup() {
+    // Import the Death Counter Store
+    const counterStore = useCounterStore();
+
+    const game = ref('');
+
+    const followers = ref('');
+    const subscribers = ref('');
+
+    window.addEventListener('onWidgetLoad', (obj) => {
+      // Set Recent Followers
+      userOptions.recentFollowers = obj.detail.session.data['follower-recent'];
+      followers.value = userOptions.recentFollowers.map((follower) => `${follower.name}`).join(' ');
+
+      // Set Recent Subscribers
+      userOptions.recentSubscribers = obj.detail.session.data['subscriber-recent'];
+      subscribers.value = userOptions.recentSubscribers.map((subscriber) => `${subscriber.name}`).join(' ');
+
+      console.log('val', followers.value);
+      console.log('subs', subscribers.value);
+    });
+
+    function GetCurrentGame() {
+      console.log('getting current game');
+      const url = 'https://decapi.me/twitch/game/exxili';
+      const xmlHttp = new XMLHttpRequest();
+      xmlHttp.open('GET', url, false);
+      xmlHttp.send(null);
+      return xmlHttp.responseText;
+    }
+
+    // Every minute check the current game to see if its been changed
+    setInterval(() => {
+      game.value = GetCurrentGame();
+    }, 60000);
+
+    // Perform first check for Current Game
+    game.value = GetCurrentGame();
+
+    console.log('followers', followers);
+    console.log('useropts', userOptions);
+
     return {
-      //
+      game,
+      followers,
+      subscribers,
+      counterStore,
     };
   },
   template: `
-    <div class="bar">
+    <div class="bar row justify-start">
 
       <!-- Logo -->
       <q-img 
-        class="logo"
+        class="col logoRotateHorizontal"
         src="https://cdn.streamelements.com/uploads/b8d62590-4dcc-423c-95a7-4a7c2dea5e7f.PNG"
-        height="38px"
-        width="38px"
+        style="height: 40px; max-width: 40px"
       />
 
-      <!-- Clock -->
-      <clock />
+      <!-- Game being Played -->
+      <div
+        class="col-auto"
+        style="background: #666666; margin: 5px; border-radius: 10px;"
+      >
+        <div class="row justify-center items-center">
+          <q-icon 
+          class="col-1 currentGameIcon" 
+          name="mdi-google-controller"
+          size="25px"
+          style="margin-top: 4px; margin-right: 15px; margin-left: 20px;"
+          />
+          <div class="col currentGameText"
+          style="margin-top: 5px;"
+          >
+          {{game}}
+          </div>
+        </div>
+      </div>
 
-      <!-- Noticication Icon -->
+      <!-- Death Counter -->
+      <div
+        v-if="counterStore.isActive"
+        class="col-auto"
+        style="background: #666666; margin: 5px; border-radius: 10px;"
+      >
+        <div class="row justify-center items-center">
+          <q-icon 
+          class="col-1 currentGameIcon" 
+          name="mdi-skull-crossbones"
+          size="25px"
+          style="margin-top: 4px; margin-right: 15px; margin-left: 20px;"
+          />
+          <div class="col currentGameText"
+          style="margin-top: 5px;"
+          >
+            {{counterStore.value}}
+          </div>
+        </div>
+      </div>
+
+      <!-- Most Recent Followers -->
+      <div
+        class="col-auto"
+        style="background: #666666; margin: 5px; border-radius: 10px; width: 300px;"
+      >
+        <div class="row justify-center items-center">
+          <q-icon 
+          class="col-1 currentGameIcon" 
+          name="mdi-account"
+          size="25px"
+          style="margin-right: 15px; margin-left: 10px;"
+          />
+          <div class="col currentGameText"
+          style="margin-top: 5px;"
+          >
+            <marquee scrollamount="3">{{followers}}</marquee>
+          </div>
+        </div>
+      </div>
+
+      <!-- Most Recent Subscribers -->
+      <div
+        class="col-auto"
+        style="background: #666666; margin: 5px; border-radius: 10px; width: 300px;"
+      >
+        <div class="row justify-center items-center">
+          <q-icon 
+          class="col-1 currentGameIcon" 
+          name="mdi-diamond-stone"
+          size="25px"
+          style="margin-right: 15px; margin-left: 10px;"
+          />
+          <div class="col currentGameText"
+          style="margin-top: 5px;"
+          >
+            <marquee scrollamount="3">{{subscribers}}</marquee>
+          </div>
+        </div>
+      </div>
+
+      <q-space />
+
+      <!-- Clock -->
+      <clock 
+      class="col"
+      style="
+      position: absolute;
+      top: 10px;
+      right: 55px;
+      color: white;
+      font-size: 14px;
+      font-family: 'Exo', sans-serif;
+      "
+       />
+
+      <!-- Notification Icon -->
       <q-icon 
-        class="notification" 
+        class="col" 
+        style="
+        position: absolute;
+        top: 7px;
+        right: 15px;
+        color: white;
+        "
         name="mdi-message-badge"
         size="25px"
       />
@@ -291,6 +534,8 @@ app.component('clock', {
 app.component('notifications', {
   setup() {
     window.addEventListener('onEventReceived', (obj) => {
+      console.log('event', obj.detail.listener, obj.detail.event.gifted);
+
       // Follower Event
       if (obj.detail.listener === 'follower-latest') {
         const audio = new Audio('https://cdn.streamelements.com/uploads/0fbf6518-4cf1-4ab9-a15f-1c1ac8200d1e.mp3');
@@ -299,17 +544,19 @@ app.component('notifications', {
       }
 
       // NewSubscriber Event - non gifted
-      if (obj.detail.listener === 'subscriber-latest' && obj.detail.event.gifted === false) {
+      if (obj.detail.listener === 'subscriber-latest' && (obj.detail.event.gifted === false || obj.detail.event.gifted === undefined)) {
         const audio = new Audio('https://cdn.streamelements.com/uploads/36b7c307-d3e9-4b98-9988-861f501bfde4.mp3');
         audio.play();
         GenerateToastify(GenNewSubscriberText(obj.detail.event.name, obj.detail.event.amount, html_encode(obj.detail.event.message)), 5000, { color: 'black', background: 'orange' });
       }
 
       if (obj.detail.listener === 'host-latest') {
-        GenerateToastify('Thanks for the host', 5000, { color: 'white', background: 'green' });
+        GenerateToastify(`Thanks for the host ${obj.detail.event.name}`, 5000, { color: 'white', background: 'green' });
       }
 
       if (obj.detail.listener === 'tip-latest') {
+        const audio = new Audio('https://cdn.streamelements.com/uploads/83513304-9a7f-4cdb-896b-1bf91578717f.mp3');
+        audio.play();
         GenerateToastify(GenTipText(obj.detail.event.name, obj.detail.event.amount, html_encode(obj.detail.event.message)), 5000, { color: 'white', background: 'purple' });
       }
 
@@ -326,6 +573,99 @@ app.component('notifications', {
       //
     };
   },
+});
+
+app.component('clips', {
+  props: {
+    title: String,
+    user: String,
+    src: String,
+  },
+  setup(props) {
+    const videoStore = useVideoStore();
+
+    console.log('props', props);
+
+    defineEmits([
+      // REQUIRED; need to specify some events that your
+      // component will emit through useDialogPluginComponent()
+      ...useDialogPluginComponent.emits,
+    ]);
+
+    const {
+      dialogRef, onDialogHide, onDialogOK, onDialogCancel,
+    } = useDialogPluginComponent();
+    // dialogRef      - Vue ref to be applied to QDialog
+    // onDialogHide   - Function to be used as handler for @hide on QDialog
+    // onDialogOK     - Function to call to settle dialog with "ok" outcome
+    //                    example: onDialogOK() - no payload
+    //                    example: onDialogOK({ /*.../* }) - with payload
+    // onDialogCancel - Function to call to settle dialog with "cancel" outcome
+
+    // this is part of our example (so not required)
+    function onOKClick() {
+      // on OK, it is REQUIRED to
+      // call onDialogOK (with optional payload)
+      onDialogOK();
+      // or with payload: onDialogOK({ ... })
+      // ...and it will also hide the dialog automatically
+    }
+
+    function onVideoEnded() {
+      console.log('VideoEnded');
+      videoStore.finishedPlaying = true;
+      onOKClick();
+    }
+
+    return {
+      dialogRef,
+      onDialogHide,
+      onDialogOK,
+      onDialogCancel,
+      props,
+      onVideoEnded,
+    };
+  },
+  template: `
+    <q-dialog ref="dialogRef" @hide="onDialogHide">
+      <div class="column justify-center items-center" style="background: #444444; min-width: 1330px; min-height: 760px;">
+
+        <!-- Video -->
+        <div class="col">
+          <video width="1280" height="720" @ended="onVideoEnded" autoplay style="margin: 20px;">
+            <source :src="props.src" type="video/mp4">
+          </video>
+        </div>
+
+        <!-- title -->
+        <div class="col"
+        style="
+        color: white;
+        font-size: 22px;
+        font-family: 'Exo', sans-serif;
+        ">
+        {{props.title}} - 
+        {{props.user}}
+        </div>
+
+      </div>
+
+      <!--<q-card class="q-dialog-plugin justify-center items-center" style="background: #444444; min-width: 1920px; min-height: 1080px;">
+        <q-card-section>
+          <video width="1280" height="720" @ended="onVideoEnded" autoplay style="margin: 20px;">
+            <source :src="props.src" type="video/mp4">
+          </video>
+        </q-card-section>
+
+        <q-card-section>
+        {{props.title}} - 
+        {{props.user}}
+        
+        </q-card-section>
+ 
+      </q-card>-->
+    </q-dialog>
+  `,
 });
 
 // Setup Pinia for use
