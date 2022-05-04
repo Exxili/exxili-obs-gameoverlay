@@ -171,3 +171,11 @@ animation-play-state: paused
         transform: translate3d(0%, 0, 0);
     }
 }
+
+.loadingBar {
+  position: absolute;
+  background: white;
+  top: 96%;
+  left: 2%;
+  z-index: 1;
+}

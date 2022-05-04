@@ -22,6 +22,46 @@ const clips = [
     user: 'steamclockalice',
     src: 'https://cdn.streamelements.com/uploads/254b7c4f-5a09-451f-b323-8953f4debbec.mp4',
   },
+  {
+    title: 'Careful what you wish for',
+    user: 'Fraxxxi',
+    src: 'https://cdn.streamelements.com/uploads/9589d824-637d-4a91-a133-12aaefacfae3.mp4',
+  },
+  {
+    title: 'Do the Andy Shake',
+    user: 'Blanka_xx',
+    src: 'https://cdn.streamelements.com/uploads/f873a17d-9bc6-4835-9dbd-e27ea2db2567.mp4',
+  },
+  {
+    title: 'Double Jump!',
+    user: 'Blanka_xx',
+    src: 'https://cdn.streamelements.com/uploads/534cf5cc-1a3d-4ad7-a3ea-732c778b9fb7.mp4',
+  },
+  {
+    title: 'Exxilis Song',
+    user: 'steamclockalice',
+    src: 'https://cdn.streamelements.com/uploads/dc4d6791-f253-4755-ae3d-947c0f0ef9ca.mp4',
+  },
+  {
+    title: 'Glowing Broccoli Squad .... Assemble!',
+    user: 'Fraxxxi',
+    src: 'https://cdn.streamelements.com/uploads/cbe40056-8ead-42a4-a97c-ef180364bfa5.mp4',
+  },
+  {
+    title: "Monkey see, monkey don't",
+    user: 'Fraxxxi',
+    src: 'https://cdn.streamelements.com/uploads/edadf9dc-95b4-4c81-b458-d7b0322a3802.mp4',
+  },
+  {
+    title: 'OctoRage',
+    user: 'm1ke51',
+    src: 'https://cdn.streamelements.com/uploads/e752d30e-7777-4476-a566-a05bb60c8b21.mp4',
+  },
+  {
+    title: 'This is how you should admire the cute things',
+    user: 'blanka_xx',
+    src: 'https://cdn.streamelements.com/uploads/88f40f3a-6857-409b-9ff2-c43929a80d94.mp4',
+  },
 ];
 // Commands
 
@@ -72,7 +112,7 @@ const useVideoStore = Pinia.defineStore('video', {
 function randomNoRepeats(array) {
   let copy = array.slice(0);
   // eslint-disable-next-line func-names
-  return function() {
+  return function () {
     if (copy.length < 1) { copy = array.slice(0); }
     const index = Math.floor(Math.random() * copy.length);
     const item = copy[index];
@@ -301,7 +341,43 @@ const app = Vue.createApp({
  */
 app.component('page', {
   setup() {
+    const loadingBarWidth = ref(0);
+
+    const barHeight = ref('25px');
+    const barWidth = ref(`${loadingBarWidth.value.toString()}px`);
+
+    // TODO: Loading bar needs to be made a bit shorter - stopping at 2480 is too long
+    const barInterval = setInterval(() => {
+      console.log('BarIntervalTick Before');
+
+      // Increment the width of the Loading bar by 3
+      loadingBarWidth.value += 4.13333;
+
+      // Set the Bars Width to the new Incremented Width
+      barWidth.value = `${loadingBarWidth.value.toString()}px`;
+
+      // Clear the interval if the loading bar has reached its max width based on 1920 x 1080
+      if (loadingBarWidth.value >= 2480) {
+        clearInterval(barInterval);
+      }
+    }, 1000);
+
+    // const barInterval = setInterval(() => {
+    //   console.log('Loading Bar Interval Tick before', loadingBarWidth.value, barWidth.value);
+    //   // Increment the width of the Loading bar by 3
+    //   loadingBarWidth.value += 3;
+    //   // Set the Bars Width to the new Incremented Width
+    //   barWidth.value = `${this.loadingBarWidth.value.toString()}px`;
+    //   console.log('Loading Bar Interval Tick after', loadingBarWidth.value, barWidth.value);
+
+    //   // Clear the interval if the loading bar has reached its max width based on 1920 x 1080
+    //   if (loadingBarWidth.value >= 1840) {
+    //     clearInterval(barInterval);
+    //   }
+    // }, 1000);
     return {
+      barHeight,
+      barWidth,
       //
     };
   },
@@ -325,6 +401,9 @@ app.component('page', {
       </div>
 
       <notifications />
+
+      <!-- Loading Bar -->
+      <div class="loadingBar" :style="{ height: barHeight, width: barWidth}"></div>
     </q-page>
   `,
 });
