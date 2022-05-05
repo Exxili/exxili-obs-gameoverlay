@@ -1,6 +1,13 @@
 /* eslint-disable no-restricted-syntax */
 const { useQuasar, useDialogPluginComponent } = Quasar;
-const { ref, defineProps, defineEmits } = Vue;
+const { ref, defineEmits } = Vue;
+const socket = io('https://api.exxili.com', { transports: ['websocket'] });
+
+socket.onAny((event, ...args) => {
+  const sound = JSON.parse(args[0]);
+  const audio = new Audio(sound.source);
+  audio.play();
+});
 
 // Data
 const userOptions = {
@@ -63,6 +70,9 @@ const clips = [
     src: 'https://cdn.streamelements.com/uploads/88f40f3a-6857-409b-9ff2-c43929a80d94.mp4',
   },
 ];
+
+// Sounds
+
 // Commands
 
 // Counter
