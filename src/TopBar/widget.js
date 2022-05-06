@@ -2,6 +2,13 @@
 // const { useQuasar } = Quasar;
 
 const { ref, h } = Vue;
+const socket = io('https://api.exxili.com', { transports: ['websocket'] });
+
+socket.onAny((event, ...args) => {
+  const sound = JSON.parse(args[0]);
+  const audio = new Audio(sound.source);
+  audio.play();
+});
 
 // Data
 const userOptions = {

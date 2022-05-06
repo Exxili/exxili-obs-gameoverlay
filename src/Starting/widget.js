@@ -625,6 +625,16 @@ app.component('notifications', {
     window.addEventListener('onEventReceived', (obj) => {
       console.log('event', obj.detail.listener, obj.detail.event.gifted);
 
+      // Sounds Events
+      // socket.onAny((event, ...args) => {
+      //   const sound = JSON.parse(args[0]);
+      //   const audio = new Audio(sound.source);
+      //   audio.play();
+
+      //   GenerateToastify(`${obj.detail.event.name} played a sound -
+      // ${sound.name}`, 5000, { background: 'pink' });
+      // });
+
       // Follower Event
       if (obj.detail.listener === 'follower-latest') {
         const audio = new Audio('https://cdn.streamelements.com/uploads/0fbf6518-4cf1-4ab9-a15f-1c1ac8200d1e.mp3');
